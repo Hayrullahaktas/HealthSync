@@ -1,4 +1,3 @@
-// lib/data/datasources/local/database/dao/nutrition_dao.dart
 
 import 'package:sqflite/sqflite.dart';
 import '../../../../models/nutrition_model.dart';
