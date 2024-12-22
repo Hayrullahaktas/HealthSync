@@ -1,4 +1,3 @@
-// lib/data/datasources/local/database/dao/exercise_dao.dart
 
 import 'package:sqflite/sqflite.dart';
 import '../../../../models/exercise_model.dart';

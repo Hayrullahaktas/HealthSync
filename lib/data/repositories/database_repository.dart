@@ -1,4 +1,3 @@
-// lib/data/repositories/database_repository.dart
 
 import '../datasources/local/database/dao/user_dao.dart';
 import '../datasources/local/database/dao/exercise_dao.dart';

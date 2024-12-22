@@ -1,4 +1,3 @@
-// lib/data/datasources/local/database/dao/user_dao.dart
 import 'package:sqflite/sqflite.dart';
 import '../../../../models/user_model.dart';
 import '../app_database.dart';
@@ -48,5 +47,3 @@ class UserDao {
     );
   }
 }
-
-// lib/data/datasources/local/database/dao/exercise_dao.dart ve nutrition_dao.dart için benzer yapıyı oluşturalım mı?
