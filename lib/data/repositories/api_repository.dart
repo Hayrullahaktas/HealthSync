@@ -3,6 +3,7 @@ import '../models/auth/login_request.dart';
 import '../models/auth/login_response.dart';
 import '../models/auth/register_request.dart';
 import '../../core/constants/api_constants.dart';
+import '../../core/constants/auth_constants.dart';
 import '../datasources/local/storage/secure_storage.dart';
 import './storage_repository.dart';
 
@@ -19,6 +20,7 @@ class ApiRepository {
         _secureStorage = secureStorage,
         _storageRepository = storageRepository;
 
+  // Email/Password Login
   Future<LoginResponse> login(LoginRequest request) async {
     try {
       final response = await _dio.post(
@@ -49,6 +51,74 @@ class ApiRepository {
         throw _handleDioError(e);
       }
       throw Exception('Login failed: $e');
+    }
+  }
+
+  // Google Login
+  Future<LoginResponse> loginWithGoogle(String idToken) async {
+    try {
+      final response = await _dio.post(
+        AuthConstants.googleAuthEndpoint,
+        data: {
+          'id_token': idToken,
+        },
+      );
+
+      final loginResponse = LoginResponse.fromJson(response.data);
+
+      await _secureStorage.saveUserCredentials(
+        userId: loginResponse.userId,
+        email: loginResponse.email,
+        token: loginResponse.token,
+      );
+
+      await _storageRepository.saveUserProfile(
+        name: loginResponse.userProfile.name,
+        height: loginResponse.userProfile.height,
+        weight: loginResponse.userProfile.weight,
+        age: loginResponse.userProfile.age,
+      );
+
+      return loginResponse;
+    } catch (e) {
+      if (e is DioException) {
+        throw _handleDioError(e);
+      }
+      throw Exception('Google login failed: $e');
+    }
+  }
+
+  // Facebook Login
+  Future<LoginResponse> loginWithFacebook(String accessToken) async {
+    try {
+      final response = await _dio.post(
+        AuthConstants.facebookAuthEndpoint,
+        data: {
+          'access_token': accessToken,
+        },
+      );
+
+      final loginResponse = LoginResponse.fromJson(response.data);
+
+      await _secureStorage.saveUserCredentials(
+        userId: loginResponse.userId,
+        email: loginResponse.email,
+        token: loginResponse.token,
+      );
+
+      await _storageRepository.saveUserProfile(
+        name: loginResponse.userProfile.name,
+        height: loginResponse.userProfile.height,
+        weight: loginResponse.userProfile.weight,
+        age: loginResponse.userProfile.age,
+      );
+
+      return loginResponse;
+    } catch (e) {
+      if (e is DioException) {
+        throw _handleDioError(e);
+      }
+      throw Exception('Facebook login failed: $e');
     }
   }
 
@@ -108,6 +178,33 @@ class ApiRepository {
         throw _handleDioError(e);
       }
       throw Exception('Profile update failed: $e');
+    }
+  }
+
+  // Token Yenileme
+  Future<LoginResponse> refreshToken(String refreshToken) async {
+    try {
+      final response = await _dio.post(
+        AuthConstants.refreshTokenEndpoint,
+        data: {
+          'refresh_token': refreshToken,
+        },
+      );
+
+      final loginResponse = LoginResponse.fromJson(response.data);
+
+      await _secureStorage.saveUserCredentials(
+        userId: loginResponse.userId,
+        email: loginResponse.email,
+        token: loginResponse.token,
+      );
+
+      return loginResponse;
+    } catch (e) {
+      if (e is DioException) {
+        throw _handleDioError(e);
+      }
+      throw Exception('Token refresh failed: $e');
     }
   }
 
