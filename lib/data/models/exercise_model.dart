@@ -1,4 +1,3 @@
-
 class ExerciseModel {
   final int? id;
   final int userId;
@@ -37,4 +36,31 @@ class ExerciseModel {
       date: DateTime.parse(map['date']),
     );
   }
+
+  Map<String, dynamic> toJson() => toMap();
+  factory ExerciseModel.fromJson(Map<String, dynamic> json) => ExerciseModel.fromMap(json);
+}
+
+// Exercise History model
+class ExerciseHistory {
+  final List<ExerciseModel> exercises;
+  final int totalCaloriesBurned;
+  final int totalDuration;
+
+  ExerciseHistory({
+    required this.exercises,
+    required this.totalCaloriesBurned,
+    required this.totalDuration,
+  });
+
+  factory ExerciseHistory.fromJson(Map<String, dynamic> json) {
+    return ExerciseHistory(
+      exercises: (json['exercises'] as List)
+          .map((e) => ExerciseModel.fromJson(e))
+          .toList(),
+      totalCaloriesBurned: json['total_calories_burned'],
+      totalDuration: json['total_duration'],
+    );
+  }
+}
 }
