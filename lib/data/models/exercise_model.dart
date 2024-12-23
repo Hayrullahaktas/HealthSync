@@ -37,7 +37,6 @@ class ExerciseModel {
     );
   }
 
-  // API işlemleri için JSON dönüşümleri
   Map<String, dynamic> toJson() => toMap();
   factory ExerciseModel.fromJson(Map<String, dynamic> json) => ExerciseModel.fromMap(json);
 }
@@ -63,4 +62,5 @@ class ExerciseHistory {
       totalDuration: json['total_duration'],
     );
   }
+}
 }
