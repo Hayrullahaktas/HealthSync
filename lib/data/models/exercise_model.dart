@@ -62,5 +62,5 @@ class ExerciseHistory {
       totalDuration: json['total_duration'],
     );
   }
-}
+
 }
