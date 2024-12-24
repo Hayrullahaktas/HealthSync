@@ -38,11 +38,11 @@ void main() async {
   // Services initialization
   final sharedPrefs = SharedPrefsService();
   await sharedPrefs.init();
-
+  
   final secureStorage = SecureStorageService();
   final jwtService = JwtService();
   final oAuthService = OAuthService();
-
+  
   // Repository initialization
   final storageRepository = StorageRepository(
     secureStorage: secureStorage,
@@ -128,8 +128,8 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-
-          return authProvider.isAuthenticated
+          
+          return authProvider.isAuthenticated 
               ? const MainScreen()
               : const LoginScreen();
         },
