@@ -1,36 +1,49 @@
 import 'package:flutter/material.dart';
-<<<<<<< Updated upstream
-
-void main() {
-  runApp(const MyApp());
-=======
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
+
+// Providers
 import 'presentation/providers/storage_provider.dart';
 import 'presentation/providers/db_provider.dart';
-import 'presentation/providers/auth_provider.dart';  // Yeni eklendi
-import 'presentation/providers/api_provider.dart';   // Yeni eklendi
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/api_provider.dart';
+
+// Repositories
 import 'data/repositories/storage_repository.dart';
 import 'data/repositories/database_repository.dart';
-import 'data/repositories/api_repository.dart';      // Yeni eklendi
+import 'data/repositories/api_repository.dart';
+
+// Services
+import 'core/services/jwt_service.dart';
+import 'core/services/oauth_service.dart';
 import 'data/datasources/local/storage/secure_storage.dart';
 import 'data/datasources/local/storage/shared_prefs.dart';
 import 'core/utils/storage_utils.dart';
+
+// Database
 import 'data/datasources/local/database/dao/user_dao.dart';
 import 'data/datasources/local/database/dao/exercise_dao.dart';
 import 'data/datasources/local/database/dao/nutrition_dao.dart';
-import 'core/network/auth_interceptor.dart';         // Yeni eklendi
+
+// Network
+import 'core/network/auth_interceptor.dart';
+
+// Screens
 import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/auth/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Storage services initialization
+  // Services initialization
   final sharedPrefs = SharedPrefsService();
   await sharedPrefs.init();
 
   final secureStorage = SecureStorageService();
+  final jwtService = JwtService();
+  final oAuthService = OAuthService();
 
+  // Repository initialization
   final storageRepository = StorageRepository(
     secureStorage: secureStorage,
     sharedPrefs: sharedPrefs,
@@ -45,10 +58,7 @@ void main() async {
 
   // API initialization
   final dio = Dio()..interceptors.add(
-    AuthInterceptor(
-      secureStorage,
-      Dio(),
-    ),
+    AuthInterceptor(secureStorage, Dio()),
   );
 
   final apiRepository = ApiRepository(
@@ -60,7 +70,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // Mevcut providerlar
+        // Storage & Database Providers
         ChangeNotifierProvider(
           create: (_) => StorageProvider(
             storageRepository: storageRepository,
@@ -71,11 +81,20 @@ void main() async {
             repository: databaseRepository,
           ),
         ),
-        // Yeni API ve Auth providerları
+
+        // Service Providers
+        Provider(create: (_) => jwtService),
+        Provider(create: (_) => oAuthService),
+        Provider(create: (_) => secureStorage),
+
+        // API & Auth Providers
+        Provider(create: (_) => apiRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(
             apiRepository: apiRepository,
             storageRepository: storageRepository,
+            oAuthService: oAuthService,
+            jwtService: jwtService,
           ),
         ),
         ChangeNotifierProvider(
@@ -87,134 +106,34 @@ void main() async {
       child: const MyApp(),
     ),
   );
->>>>>>> Stashed changes
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // Auth durumunu kontrol et
-    final authProvider = context.watch<AuthProvider>();
-
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'HealthSync',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-<<<<<<< Updated upstream
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-=======
-      home: authProvider.isAuthenticated
-          ? const MainScreen()
-          : const LoginScreen(), // TODO: LoginScreen oluşturulacak
->>>>>>> Stashed changes
-    );
-  }
-}
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          if (authProvider.isLoading) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+          return authProvider.isAuthenticated
+              ? const MainScreen()
+              : const LoginScreen();
+        },
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
