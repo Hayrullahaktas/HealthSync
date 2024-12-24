@@ -1,31 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
+
+// Providers
 import 'presentation/providers/storage_provider.dart';
 import 'presentation/providers/db_provider.dart';
-import 'presentation/providers/auth_provider.dart';  // Yeni eklendi
-import 'presentation/providers/api_provider.dart';   // Yeni eklendi
+import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/api_provider.dart';
+
+// Repositories
 import 'data/repositories/storage_repository.dart';
 import 'data/repositories/database_repository.dart';
-import 'data/repositories/api_repository.dart';      // Yeni eklendi
+import 'data/repositories/api_repository.dart';
+
+// Services
+import 'core/services/jwt_service.dart';
+import 'core/services/oauth_service.dart';
 import 'data/datasources/local/storage/secure_storage.dart';
 import 'data/datasources/local/storage/shared_prefs.dart';
 import 'core/utils/storage_utils.dart';
+
+// Database
 import 'data/datasources/local/database/dao/user_dao.dart';
 import 'data/datasources/local/database/dao/exercise_dao.dart';
 import 'data/datasources/local/database/dao/nutrition_dao.dart';
-import 'core/network/auth_interceptor.dart';         // Yeni eklendi
+
+// Network
+import 'core/network/auth_interceptor.dart';
+
+// Screens
 import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/auth/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Storage services initialization
+  // Services initialization
   final sharedPrefs = SharedPrefsService();
   await sharedPrefs.init();
-
+  
   final secureStorage = SecureStorageService();
-
+  final jwtService = JwtService();
+  final oAuthService = OAuthService();
+  
+  // Repository initialization
   final storageRepository = StorageRepository(
     secureStorage: secureStorage,
     sharedPrefs: sharedPrefs,
@@ -40,10 +58,7 @@ void main() async {
 
   // API initialization
   final dio = Dio()..interceptors.add(
-    AuthInterceptor(
-      secureStorage,
-      Dio(),
-    ),
+    AuthInterceptor(secureStorage, Dio()),
   );
 
   final apiRepository = ApiRepository(
@@ -55,7 +70,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // Mevcut providerlar
+        // Storage & Database Providers
         ChangeNotifierProvider(
           create: (_) => StorageProvider(
             storageRepository: storageRepository,
@@ -66,11 +81,20 @@ void main() async {
             repository: databaseRepository,
           ),
         ),
-        // Yeni API ve Auth providerları
+
+        // Service Providers
+        Provider(create: (_) => jwtService),
+        Provider(create: (_) => oAuthService),
+        Provider(create: (_) => secureStorage),
+
+        // API & Auth Providers
+        Provider(create: (_) => apiRepository),
         ChangeNotifierProvider(
           create: (_) => AuthProvider(
             apiRepository: apiRepository,
             storageRepository: storageRepository,
+            oAuthService: oAuthService,
+            jwtService: jwtService,
           ),
         ),
         ChangeNotifierProvider(
@@ -82,27 +106,34 @@ void main() async {
       child: const MyApp(),
     ),
   );
-
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Auth durumunu kontrol et
-    final authProvider = context.watch<AuthProvider>();
-
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'HealthSync',
       theme: ThemeData(
-        
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: authProvider.isAuthenticated
-          ? const MainScreen()
-          : const LoginScreen(), // TODO: LoginScreen oluşturulacak
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          if (authProvider.isLoading) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          
+          return authProvider.isAuthenticated 
+              ? const MainScreen()
+              : const LoginScreen();
+        },
+      ),
     );
   }
 }
