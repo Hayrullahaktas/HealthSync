@@ -1,7 +1,7 @@
+// lib/presentation/providers/api_provider.dart
 import 'package:flutter/material.dart';
 import '../../data/repositories/api_repository.dart';
-import '../../data/models/auth/login_request.dart';
-import '../../data/models/auth/register_request.dart';
+import '../../data/models/user_model.dart';  // UserModel'i import ediyoruz
 
 class ApiProvider extends ChangeNotifier {
   final ApiRepository _apiRepository;
@@ -14,7 +14,7 @@ class ApiProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<bool> updateUserProfile(UserProfile profile) async {
+  Future<bool> updateUserProfile(UserModel profile) async {  // UserModel olarak değiştirdik
     _isLoading = true;
     _error = null;
     notifyListeners();

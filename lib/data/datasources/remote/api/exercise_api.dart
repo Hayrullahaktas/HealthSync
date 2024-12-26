@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../models/common/api_response.dart';
-import '../../../models/exercise/exercise_model.dart';
+import '../../../models/exercise_model.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/exceptions/api_exceptions.dart';
 

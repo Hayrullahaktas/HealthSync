@@ -1,9 +1,13 @@
+// lib/data/models/auth/login_response.dart
+
+import '../user_model.dart';  // UserModel'i import ediyoruz
+
 class LoginResponse {
   final String userId;
   final String email;
   final String token;
   final String refreshToken;
-  final UserProfile userProfile;
+  final UserModel userProfile;  // UserProfile yerine UserModel kullanıyoruz
 
   LoginResponse({
     required this.userId,
@@ -19,13 +23,12 @@ class LoginResponse {
       email: json['email'],
       token: json['token'],
       refreshToken: json['refresh_token'],
-      userProfile: UserProfile(
+      userProfile: UserModel(  // UserModel constructor'ını kullanıyoruz
         name: json['profile']['name'],
         height: json['profile']['height'].toDouble(),
         weight: json['profile']['weight'].toDouble(),
         age: json['profile']['age'],
-        isDarkMode: false, // Default value, will be set from local storage
-        dailyGoal: 10000, // Default value, will be set from local storage
+        createdAt: DateTime.now(),  // veya json['profile']['created_at'] eğer API'den geliyorsa
       ),
     );
   }

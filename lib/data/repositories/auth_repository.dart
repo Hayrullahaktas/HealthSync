@@ -43,7 +43,15 @@ class AuthRepository {
   }
 
   // Kayıt olma
-  Future<bool> register(String email, String password, String name) async {
+  // auth_repository.dart içindeki register metodu
+  Future<bool> register({
+    required String email,
+    required String password,
+    required String name,
+    required double height,
+    required double weight,
+    required int age,
+  }) async {
     try {
       final response = await _dio.post(
         AuthConstants.registerEndpoint,
@@ -51,6 +59,9 @@ class AuthRepository {
           email: email,
           password: password,
           name: name,
+          height: height,
+          weight: weight,
+          age: age,
         ).toJson(),
       );
 

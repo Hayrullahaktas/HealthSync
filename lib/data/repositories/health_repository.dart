@@ -1,6 +1,6 @@
 import '../datasources/remote/api/exercise_api.dart';
 import '../datasources/remote/api/health_metrics_api.dart';
-import '../models/exercise/exercise_model.dart';
+import '../models/exercise_model.dart';
 import '../models/health/health_metrics_model.dart';
 import '../models/common/api_response.dart';
 

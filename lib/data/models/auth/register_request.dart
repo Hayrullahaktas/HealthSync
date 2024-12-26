@@ -1,3 +1,4 @@
+// lib/data/models/auth/register_request.dart
 class RegisterRequest {
   final String email;
   final String password;

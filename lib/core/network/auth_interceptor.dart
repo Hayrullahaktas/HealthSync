@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
-import '../constants/api_constants.dart';
-import '../../data/datasources/local/storage/secure_storage.dart';
+import 'package:health_sync/core/constants/storage_constants.dart';  // Tam yolu ile import
+import 'package:health_sync/core/constants/api_constants.dart';      // Tam yolu ile import
+import 'package:health_sync/data/datasources/local/storage/secure_storage.dart';
 
 class AuthInterceptor extends Interceptor {
   final SecureStorageService _secureStorage;
@@ -26,7 +27,7 @@ class AuthInterceptor extends Interceptor {
       // Token expired, try to refresh
       try {
         final credentials = await _secureStorage.getUserCredentials();
-        final userId = credentials['userId'];
+        final userId = credentials[StorageConstants.keyUserId];
 
         if (userId != null) {
           final response = await _dio.post(
