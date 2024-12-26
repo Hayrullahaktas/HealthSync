@@ -34,20 +34,43 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   String? get userId => _userId;
 
-  Future<void> _checkAuthStatus() async {
-    final credentials = await _storageRepository.getUserCredentials();
-    final token = credentials['token'];
+  // lib/presentation/providers/auth_provider.dart içinde
 
-    if (token != null && !_jwtService.isTokenExpired(token)) {
-      _isAuthenticated = true;
-      _userId = _jwtService.getUserIdFromToken(token);
-    } else {
+  Future<void> _checkAuthStatus() async {
+    try {
+      final credentials = await _storageRepository.getUserCredentials();
+      final token = credentials['token'];
+
+      if (token != null) {
+        try {
+          final isValid = !_jwtService.isTokenExpired(token);
+          if (isValid) {
+            _isAuthenticated = true;
+            _userId = _jwtService.getUserIdFromToken(token);
+          } else {
+            _isAuthenticated = false;
+            _userId = null;
+            // Token süresi dolmuşsa temizle
+            await _storageRepository.clearCredentials();
+          }
+        } catch (e) {
+          print('Token kontrol hatası: $e');
+          _isAuthenticated = false;
+          _userId = null;
+        }
+      } else {
+        _isAuthenticated = false;
+        _userId = null;
+      }
+
+      notifyListeners();
+    } catch (e) {
+      print('Auth status kontrol hatası: $e');
       _isAuthenticated = false;
       _userId = null;
+      notifyListeners();
     }
-    notifyListeners();
   }
-
   // Mevcut login metodu
   Future<bool> login(String email, String password) async {
     _isLoading = true;
@@ -194,7 +217,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _oAuthService.signOutGoogle();
       await _oAuthService.signOutFacebook();
-      await _storageRepository.clearCredentials();
+      await _storageRepository. clearCredentials();
       _isAuthenticated = false;
       _userId = null;
     } catch (e) {

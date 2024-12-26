@@ -1,8 +1,7 @@
-
 import '../datasources/local/storage/secure_storage.dart';
 import '../datasources/local/storage/shared_prefs.dart';
 import '../../core/utils/storage_utils.dart';
-
+import '../../core/constants/storage_constants.dart';
 
 class StorageRepository {
   final SecureStorageService _secureStorage;
@@ -24,8 +23,6 @@ class StorageRepository {
   Future<void> saveThemeMode(bool isDarkMode) async {
     await _sharedPrefs.saveThemeMode(isDarkMode);
   }
-
-
 
   Future<UserProfile> getUserProfile() async {
     return UserProfile(
@@ -55,6 +52,24 @@ class StorageRepository {
     return await _secureStorage.getUserCredentials();
   }
 
+  // Clear credentials method
+  Future<void> clearCredentials() async {
+    // Clear secure storage
+    await _secureStorage.deleteSecureData(StorageConstants.keyUserToken);
+    await _secureStorage.deleteSecureData(StorageConstants.keyUserId);
+    await _secureStorage.deleteSecureData(StorageConstants.keyUserEmail);
+
+    // Clear shared preferences
+    await _sharedPrefs.saveUserProfile(
+      name: '',
+      height: 0.0,
+      weight: 0.0,
+      age: 0,
+    );
+    await _sharedPrefs.saveDailyGoal(10000); // Reset to default
+    await _sharedPrefs.saveThemeMode(false); // Reset to light mode
+  }
+
   // Shared Preferences methods
   Future<void> saveUserProfile({
     required String name,
@@ -78,9 +93,13 @@ class StorageRepository {
   Future<void> saveNutritionLog(String log) async {
     await _storageUtils.saveNutritionLog(log);
   }
+
+  // Clear logs
+  Future<void> clearLogs() async {
+    // Clear exercise and nutrition logs if needed
+    // Implement based on StorageUtils capabilities
+  }
 }
-
-
 
 class UserProfile {
   final String name;
@@ -98,4 +117,44 @@ class UserProfile {
     required this.isDarkMode,
     required this.dailyGoal,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'height': height,
+      'weight': weight,
+      'age': age,
+      'isDarkMode': isDarkMode,
+      'dailyGoal': dailyGoal,
+    };
+  }
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      name: json['name'] ?? '',
+      height: json['height']?.toDouble() ?? 0.0,
+      weight: json['weight']?.toDouble() ?? 0.0,
+      age: json['age'] ?? 0,
+      isDarkMode: json['isDarkMode'] ?? false,
+      dailyGoal: json['dailyGoal'] ?? 10000,
+    );
+  }
+
+  UserProfile copyWith({
+    String? name,
+    double? height,
+    double? weight,
+    int? age,
+    bool? isDarkMode,
+    int? dailyGoal,
+  }) {
+    return UserProfile(
+      name: name ?? this.name,
+      height: height ?? this.height,
+      weight: weight ?? this.weight,
+      age: age ?? this.age,
+      isDarkMode: isDarkMode ?? this.isDarkMode,
+      dailyGoal: dailyGoal ?? this.dailyGoal,
+    );
+  }
 }

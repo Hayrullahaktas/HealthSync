@@ -6,6 +6,7 @@ import '../../core/constants/api_constants.dart';
 import '../../core/constants/auth_constants.dart';
 import '../datasources/local/storage/secure_storage.dart';
 import './storage_repository.dart';
+import '../models/user_model.dart';
 
 class ApiRepository {
   final Dio _dio;
@@ -23,10 +24,16 @@ class ApiRepository {
   // Email/Password Login
   Future<LoginResponse> login(LoginRequest request) async {
     try {
+      print('Login isteği gönderiliyor...');
+      print('Email: ${request.email}');
+      print('Request URL: ${ApiConstants.baseUrl}${ApiConstants.login}');
+
       final response = await _dio.post(
-        ApiConstants.login,
+        '${ApiConstants.baseUrl}${ApiConstants.login}', // login endpoint
         data: request.toJson(),
       );
+
+      print('Login yanıtı alındı: ${response.data}');
 
       final loginResponse = LoginResponse.fromJson(response.data);
 
@@ -45,12 +52,65 @@ class ApiRepository {
         age: loginResponse.userProfile.age,
       );
 
+      print('Login başarılı!');
+      print('Kullanıcı ID: ${loginResponse.userId}');
+      print('Token: ${loginResponse.token}');
+
       return loginResponse;
     } catch (e) {
+      print('Login hatası: $e');
       if (e is DioException) {
-        throw _handleDioError(e);
+        final error = _handleDioError(e);
+        print('API hatası: ${error.toString()}');
+        throw error;
       }
       throw Exception('Login failed: $e');
+    }
+  }
+
+  // Register
+  Future<LoginResponse> register(RegisterRequest request) async {
+    try {
+      print('Register isteği gönderiliyor...');
+      print('Email: ${request.email}');
+      print('Request URL: ${ApiConstants.baseUrl}${ApiConstants.register}');
+
+      final response = await _dio.post(
+        '${ApiConstants.baseUrl}${ApiConstants.register}',
+        data: request.toJson(),
+      );
+
+      print('Register yanıtı alındı: ${response.data}');
+
+      final loginResponse = LoginResponse.fromJson(response.data);
+
+      // Save credentials and profile
+      await _secureStorage.saveUserCredentials(
+        userId: loginResponse.userId,
+        email: loginResponse.email,
+        token: loginResponse.token,
+      );
+
+      await _storageRepository.saveUserProfile(
+        name: request.name,
+        height: request.height,
+        weight: request.weight,
+        age: request.age,
+      );
+
+      print('Register başarılı!');
+      print('Kullanıcı ID: ${loginResponse.userId}');
+      print('Token: ${loginResponse.token}');
+
+      return loginResponse;
+    } catch (e) {
+      print('Register hatası: $e');
+      if (e is DioException) {
+        final error = _handleDioError(e);
+        print('API hatası: ${error.toString()}');
+        throw error;
+      }
+      throw Exception('Registration failed: $e');
     }
   }
 
@@ -58,7 +118,7 @@ class ApiRepository {
   Future<LoginResponse> loginWithGoogle(String idToken) async {
     try {
       final response = await _dio.post(
-        AuthConstants.googleAuthEndpoint,
+        '${ApiConstants.baseUrl}${AuthConstants.googleAuthEndpoint}',
         data: {
           'id_token': idToken,
         },
@@ -92,7 +152,7 @@ class ApiRepository {
   Future<LoginResponse> loginWithFacebook(String accessToken) async {
     try {
       final response = await _dio.post(
-        AuthConstants.facebookAuthEndpoint,
+        '${ApiConstants.baseUrl}${AuthConstants.facebookAuthEndpoint}',
         data: {
           'access_token': accessToken,
         },
@@ -122,47 +182,17 @@ class ApiRepository {
     }
   }
 
-  Future<LoginResponse> register(RegisterRequest request) async {
-    try {
-      final response = await _dio.post(
-        ApiConstants.register,
-        data: request.toJson(),
-      );
-
-      final loginResponse = LoginResponse.fromJson(response.data);
-
-      // Save credentials and profile
-      await _secureStorage.saveUserCredentials(
-        userId: loginResponse.userId,
-        email: loginResponse.email,
-        token: loginResponse.token,
-      );
-
-      await _storageRepository.saveUserProfile(
-        name: request.name,
-        height: request.height,
-        weight: request.weight,
-        age: request.age,
-      );
-
-      return loginResponse;
-    } catch (e) {
-      if (e is DioException) {
-        throw _handleDioError(e);
-      }
-      throw Exception('Registration failed: $e');
-    }
-  }
-
-  Future<void> updateUserProfile(UserProfile profile) async {
+  // Update User Profile
+  Future<void> updateUserProfile(UserModel profile) async {
     try {
       await _dio.put(
-        ApiConstants.updateProfile,
+        '${ApiConstants.baseUrl}${ApiConstants.updateProfile}',
         data: {
           'name': profile.name,
           'height': profile.height,
           'weight': profile.weight,
           'age': profile.age,
+          'created_at': profile.createdAt.toIso8601String(),
         },
       );
 
@@ -181,11 +211,11 @@ class ApiRepository {
     }
   }
 
-  // Token Yenileme
+  // Refresh Token
   Future<LoginResponse> refreshToken(String refreshToken) async {
     try {
       final response = await _dio.post(
-        AuthConstants.refreshTokenEndpoint,
+        '${ApiConstants.baseUrl}${AuthConstants.refreshTokenEndpoint}',
         data: {
           'refresh_token': refreshToken,
         },
@@ -208,6 +238,7 @@ class ApiRepository {
     }
   }
 
+  // Error Handler
   Exception _handleDioError(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
