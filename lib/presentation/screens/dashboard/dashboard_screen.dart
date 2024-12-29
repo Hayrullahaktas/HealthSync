@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:health_sync/presentation/screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/storage_provider.dart';
 import '../../providers/db_provider.dart';
 import '../../widgets/common/metric_card.dart';
@@ -21,16 +23,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadData();
   }
-
   Future<void> _loadData() async {
     final dbProvider = Provider.of<DatabaseProvider>(context, listen: false);
     final storageProvider = Provider.of<StorageProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    // Örnek bir kullanıcı ID'si ile
-    const userId = 1;
-    await dbProvider.loadUser(userId);
-    await dbProvider.loadUserExercises(userId);
-    await dbProvider.loadDailyNutritionSummary(userId, DateTime.now());
+    try {
+      // AuthProvider'dan userId'yi al
+      final userId = authProvider.userId;
+      if (userId == null) {
+        // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );        return;
+      }
+
+      // String olan userId'yi int'e çevir
+      final userIdInt = int.parse(userId);
+
+      // Verileri yükle
+      await dbProvider.loadUser(userIdInt);
+      await dbProvider.loadUserExercises(userIdInt);
+      await dbProvider.loadDailyNutritionSummary(userIdInt, DateTime.now());
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veriler yüklenirken bir hata oluştu')),
+      );
+    }
   }
 
   @override
