@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:health_sync/presentation/screens/auth/register_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../presentation/providers/auth_provider.dart';
 
@@ -67,6 +68,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 context.read<AuthProvider>().signInWithFacebook();
               },
               child: const Text('Login with Facebook'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                context.read<AuthProvider>().signInWithFacebook();
+              },
+              child: const Text('Login with Facebook'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                );
+              },
+              child: const Text('Register'),
             ),
           ],
         ),
