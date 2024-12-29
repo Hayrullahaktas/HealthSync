@@ -113,12 +113,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<StorageProvider>(
+      builder: (context, storageProvider, _) {
     return MaterialApp(
       title: 'HealthSync',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      ),
+      theme: ThemeData.light(useMaterial3: true),
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      themeMode: storageProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
           if (authProvider.isLoading) {
@@ -128,12 +129,14 @@ class MyApp extends StatelessWidget {
               ),
             );
           }
-          
-          return authProvider.isAuthenticated 
+
+          return authProvider.isAuthenticated
               ? const MainScreen()
               : const LoginScreen();
         },
       ),
     );
+  },
+  );
   }
 }
