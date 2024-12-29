@@ -80,4 +80,34 @@ class DatabaseProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+
+  Future<void> deleteExercise(int id) async {
+    try {
+      await _repository.deleteExercise(id);
+      _exercises.removeWhere((exercise) => exercise.id == id);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deleting exercise: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> clearUserData(int userId) async {
+    try {
+      // Kullanıcının egzersizlerini sil
+      await _repository.deleteAllExercises(userId);
+      _exercises = [];
+
+      // Kullanıcının beslenme verilerini sil
+      await _repository.deleteAllNutrition(userId);
+      _nutritionEntries = [];
+      _dailyNutritionSummary = {};
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error clearing user data: $e');
+      rethrow;
+    }
+  }
 }
