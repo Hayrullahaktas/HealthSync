@@ -65,4 +65,13 @@ class ExerciseDao {
       whereArgs: [id],
     );
   }
+
+  Future<int> deleteAllForUser(int userId) async {
+    final db = await AppDatabase.database;
+    return await db.delete(
+      tableName,
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+  }
 }
