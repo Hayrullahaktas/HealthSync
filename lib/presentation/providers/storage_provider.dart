@@ -96,6 +96,7 @@ class StorageProvider extends ChangeNotifier {
       await _storageRepository.saveThemeMode(_isDarkMode);
       notifyListeners();
     } catch (e) {
+      _isDarkMode = !_isDarkMode; // Hata durumunda geri al
       debugPrint('Error toggling theme mode: $e');
       rethrow;
     }
