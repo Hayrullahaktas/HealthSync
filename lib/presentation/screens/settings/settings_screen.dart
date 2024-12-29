@@ -1,10 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/db_provider.dart';
 import '../../providers/storage_provider.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
-
+import '../../providers/auth_provider.dart';
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
@@ -13,31 +14,30 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late TextEditingController _nameController;
-  late TextEditingController _heightController;
-  late TextEditingController _weightController;
-  late TextEditingController _ageController;
-  late TextEditingController _dailyGoalController;
+  // Controller'ları direkt oluşturalım
+  final _nameController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _dailyGoalController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    final storageProvider = Provider.of<StorageProvider>(context, listen: false);
+    _loadUserData();
+  }
 
-    _nameController = TextEditingController(text: storageProvider.userName);
-    _heightController = TextEditingController(
-      text: storageProvider.userHeight?.toString() ?? '',
-    );
-    _weightController = TextEditingController(
-      text: storageProvider.userWeight?.toString() ?? '',
-    );
-    _ageController = TextEditingController(
-      text: storageProvider.userAge?.toString() ?? '',
-    );
-    _dailyGoalController = TextEditingController(
-      text: storageProvider.dailyGoal.toString(),
-    );
+  Future<void> _loadUserData() async {
+    final storageProvider = Provider.of<StorageProvider>(context, listen: false);
+    await storageProvider.loadUserProfile();
+
+    // Verileri controller'lara yükle
+    _nameController.text = storageProvider.userName ?? '';
+    _heightController.text = storageProvider.userHeight?.toString() ?? '';
+    _weightController.text = storageProvider.userWeight?.toString() ?? '';
+    _ageController.text = storageProvider.userAge?.toString() ?? '';
+    _dailyGoalController.text = storageProvider.dailyGoal.toString();
   }
 
   @override
@@ -49,6 +49,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _dailyGoalController.dispose();
     super.dispose();
   }
+
+
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
@@ -203,6 +205,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(),
                   const SizedBox(height: 16),
                   Text(
+                    'Account',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomButton(
+                    text: 'Logout',
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Logout'),
+                          content: const Text(
+                            'Are you sure you want to logout?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                Navigator.pop(context); // Dialog'u kapat
+                                await context.read<AuthProvider>().logout();
+                                if (mounted) {
+                                  // Login sayfasına yönlendir ve geri dönüşü engelle
+                                  Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    '/login',
+                                        (route) => false,
+                                  );
+                                }
+                              },
+                              child: Text(
+                                'Logout',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  Text(
                     'Data Management',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
@@ -214,17 +265,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                   ),
-                  const SizedBox(height: 16),
                   CustomButton(
                     text: 'Clear All Data',
                     onPressed: () {
+                      // Önce onay dialogu göster
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text('Clear All Data'),
                           content: const Text(
-                            'Are you sure you want to clear all your data? '
-                                'This action cannot be undone.',
+                            'Are you sure you want to clear all data? This action cannot be undone.',
                           ),
                           actions: [
                             TextButton(
@@ -232,12 +282,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: const Text('Cancel'),
                             ),
                             TextButton(
-                              onPressed: () {
-                                // TODO: Implement clear all data
-                                Navigator.pop(context);
+                              onPressed: () async {
+                                try {
+                                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                  final userId = authProvider.userId;
+
+                                  if (userId != null) {
+                                    // Önce dialog'u kapat
+                                    Navigator.pop(context);
+
+                                    // Verileri sil
+                                    await Provider.of<DatabaseProvider>(context, listen: false)
+                                        .clearUserData(int.parse(userId));
+
+                                    // Başarılı mesajını göster
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('All data cleared successfully')),
+                                      );
+                                    }
+
+                                    // Verileri yeniden yükle
+                                    await _loadUserData();
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error clearing data: $e')),
+                                    );
+                                  }
+                                }
                               },
                               child: Text(
-                                'Clear',
+                                'Clear All',
                                 style: TextStyle(
                                   color: Theme.of(context).colorScheme.error,
                                 ),
