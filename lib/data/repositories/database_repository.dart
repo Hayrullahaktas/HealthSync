@@ -30,6 +30,8 @@ class DatabaseRepository {
   Future<int> saveExercise(ExerciseModel exercise) =>
       _exerciseDao.insertExercise(exercise);
 
+  Future<int> deleteExercise(int id) => _exerciseDao.deleteExercise(id);
+
   Future<List<ExerciseModel>> getUserExercises(int userId) =>
       _exerciseDao.getExercisesForUser(userId);
 
@@ -46,6 +48,8 @@ class DatabaseRepository {
   Future<List<NutritionModel>> getUserNutrition(int userId) =>
       _nutritionDao.getNutritionForUser(userId);
 
+  Future<int> deleteNutrition(int id) => _nutritionDao.deleteNutrition(id);
+
   Future<Map<String, double>> getDailyNutritionSummary(
       int userId,
       DateTime date,
@@ -56,4 +60,24 @@ class DatabaseRepository {
       DateTime startDate,
       DateTime endDate,
       ) => _nutritionDao.getNutritionByDateRange(userId, startDate, endDate);
+
+  Future<int> deleteAllUserExercises(int userId) async {
+    final db = await _exerciseDao.deleteAllForUser(userId);
+    return db;
+  }
+
+
+  Future<int> deleteAllUserNutrition(int userId) async {
+    final db = await _nutritionDao.deleteAllForUser(userId);
+    return db;
+  }
+
+  Future<void> deleteAllExercises(int userId) async {
+    await _exerciseDao.deleteAllForUser(userId);
+  }
+
+  Future<void> deleteAllNutrition(int userId) async {
+    await _nutritionDao.deleteAllForUser(userId);
+  }
+
 }
