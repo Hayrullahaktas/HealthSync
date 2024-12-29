@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/db_provider.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
@@ -66,9 +67,17 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // AuthProvider'dan userId'yi al
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.userId;
+
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
       final exercise = ExerciseModel(
         id: widget.exercise?.id,
-        userId: 1, // Normally get from auth
+        userId: int.parse(userId), // Burada string olan userId'yi int'e çeviriyoruz
         name: _nameController.text,
         duration: int.parse(_durationController.text),
         caloriesBurned: int.parse(_caloriesController.text),
@@ -94,6 +103,33 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _deleteExercise() async {
+    setState(() => _isLoading = true);
+
+    try {
+      if (widget.exercise?.id != null) {
+        await Provider.of<DatabaseProvider>(context, listen: false)
+            .deleteExercise(widget.exercise!.id!);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Exercise deleted successfully')),
+          );
+          Navigator.pop(context);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting exercise: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +231,8 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                           ),
                           TextButton(
                             onPressed: () {
-                              // TODO: Implement delete exercise
-                              Navigator.pop(context);
-                              Navigator.pop(context);
+                              Navigator.pop(context); 
+                              _deleteExercise(); // Silme işlemini gerçekleştir
                             },
                             child: Text(
                               'Delete',
