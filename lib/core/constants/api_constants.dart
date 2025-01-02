@@ -1,7 +1,8 @@
 class ApiConstants {
   // Base URL
   //static const String baseUrl = 'https://api.healthsync.com/v1';
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  // static const String baseUrl = 'http://10.0.2.2:3000';
+  static const String baseUrl = 'https://health-sync-api.vercel.app';
   // User & Auth Endpoints
   static const String login = '/auth/login';
   static const String register = '/auth/register';
