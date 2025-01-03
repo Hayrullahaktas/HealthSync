@@ -1,8 +1,7 @@
 # HealthSync - Fitness ve Beslenme Takip Uygulaması
 
 ## Projenin Amacı ve Kapsamı
-HealthSync, kullanıcıların fitness ve beslenme aktivitelerini takip etmelerine olanak sağlayan bir mobil uygulamadır. Flutter framework'ü kullanılarak geliştirilen uygulama, Storage, Local Database ve UI bileşenlerini içermektedir.
-
+HealthSync, kullanıcıların fitness ve beslenme aktivitelerini takip etmelerine olanak sağlayan bir mobil uygulamadır.
 ## Geliştirme Süreci ve Branch Stratejisi
 
 ### Branch Yapısı
