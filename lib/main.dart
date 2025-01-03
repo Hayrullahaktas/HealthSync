@@ -17,7 +17,7 @@ import 'data/repositories/api_repository.dart';
 // Services
 import 'core/services/jwt_service.dart';
 import 'core/services/oauth_service.dart';
-import 'core/services/notification_service.dart';
+import '../../core/services/notification_service.dart';
 import 'data/datasources/local/storage/secure_storage.dart';
 import 'data/datasources/local/storage/shared_prefs.dart';
 import 'core/utils/storage_utils.dart';

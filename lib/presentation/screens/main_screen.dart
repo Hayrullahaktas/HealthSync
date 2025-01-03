@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
-import '../../core/services/notification_service.dart';
-import '../../data/models/notification_models.dart';  // EventType için bu import eklendi
+import '../../core/services/notification_service.dart';  // Import yolu düzeltildi
+import '../../data/models/notification_models.dart';  // Import yolu düzeltildi
 import 'dashboard/dashboard_screen.dart';
 import 'statistics/statistics_screen.dart';
 import 'settings/settings_screen.dart';

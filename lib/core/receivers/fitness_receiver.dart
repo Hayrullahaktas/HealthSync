@@ -1,5 +1,6 @@
-import '../../data/models/notification_models.dart';
+import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
+import '../../data/models/notification_models.dart';
 
 class FitnessReceiver {
   final NotificationService _notificationService;

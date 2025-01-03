@@ -19,8 +19,8 @@ class NotificationService {
       [
         NotificationChannel(
           channelKey: 'health_sync_channel',
-          channelName: 'HealthSync Notifications',
-          channelDescription: 'Health and fitness notifications',
+          channelName: 'HealthSync Bildirimleri',
+          channelDescription: 'Sağlık ve fitness bildirimleri',
           defaultColor: const Color.fromARGB(255, 157, 80, 221),
           ledColor: Colors.white,
           importance: NotificationImportance.High,
