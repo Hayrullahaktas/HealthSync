@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/db_provider.dart';
 import '../../../data/models/exercise_model.dart';
 import '../../../data/models/nutrition_model.dart';
+import '../auth/login_screen.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -24,18 +26,35 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     _tabController = TabController(length: 3, vsync: this);
     _loadData();
   }
-
   Future<void> _loadData() async {
     final dbProvider = Provider.of<DatabaseProvider>(context, listen: false);
-    final userId = 1; // Normally get from auth
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    final startDate = DateTime.now().subtract(const Duration(days: 7));
-    final endDate = DateTime.now();
+    try {
+      // AuthProvider'dan userId'yi al
+      final userId = authProvider.userId;
+      if (userId == null) {
+        // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+        return;
+      }
 
-    await dbProvider.loadUserExercises(userId);
-    await dbProvider.loadUserNutrition(userId);
+      // String olan userId'yi int'e çevir
+      final userIdInt = int.parse(userId);
+
+      // Verileri yükle
+      await dbProvider.loadUserExercises(userIdInt);
+      await dbProvider.loadUserNutrition(userIdInt);
+    } catch (e) {
+      print('Error loading data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veriler yüklenirken bir hata oluştu')),
+      );
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
