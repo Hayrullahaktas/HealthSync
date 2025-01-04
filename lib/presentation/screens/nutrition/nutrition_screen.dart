@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/db_provider.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
@@ -91,9 +92,18 @@ class _NutritionScreenState extends State<NutritionScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.userId;
+
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final userIdInt = int.parse(userId);
+
       final nutrition = NutritionModel(
         id: widget.nutrition?.id,
-        userId: 1, // burası auth'dan gelecek şimdilik 1 yaptım
+        userId: userIdInt,
         foodName: _foodNameController.text,
         calories: double.parse(_caloriesController.text),
         protein: double.parse(_proteinController.text),
@@ -109,9 +119,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Nutrition saved successfully')),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true); // true döndürerek başarılı kaydı bildir
       }
     } catch (e) {
+      print('Error saving nutrition: $e'); // Debug için hata logla
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error saving nutrition: $e')),
