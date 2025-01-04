@@ -69,9 +69,22 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _selectedIndex,
+            children: _screens,
+          ),
+          Positioned(
+            bottom: 80, // Navigation bar'dan uzaklığı artırmak için bu değeri ayarlayın
+            left: 16, // Sola hizalamak için bu değeri ayarlayın
+            child: FloatingActionButton.extended(
+              onPressed: () => testNotifications(context),
+              label: const Text('Test Notifications'),
+              icon: const Icon(Icons.notifications_active),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
@@ -94,11 +107,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => testNotifications(context),
-        label: const Text('Test Notifications'),
-        icon: const Icon(Icons.notifications_active),
-      ),
     );
   }
+
+
 }
