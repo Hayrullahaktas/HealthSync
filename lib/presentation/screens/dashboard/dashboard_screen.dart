@@ -174,49 +174,58 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (context) => SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.fitness_center),
-                    title: const Text('Add Exercise'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ExerciseScreen(),
-                        ),
-                      );
-                    },
-                  ),
-
-
-                  ListTile(
-                    leading: const Icon(Icons.restaurant_menu),
-                    title: const Text('Add Nutrition'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NutritionScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+          heroTag: 'dashboard_fab', 
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (context) => SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.fitness_center),
+                      title: const Text('Add Exercise'),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ExerciseScreen(),
+                          ),
+                        );
+                        if (result == true) {
+                          await _loadData();
+                          final dbProvider = Provider.of<DatabaseProvider>(context, listen: false);
+                          print('Updated nutrition summary: ${dbProvider.dailyNutritionSummary}');
+                        }
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.restaurant_menu),
+                      title: const Text('Add Nutrition'),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NutritionScreen(),
+                          ),
+                        );
+                        if (result == true) {
+                          await _loadData();
+                          final dbProvider = Provider.of<DatabaseProvider>(context, listen: false);
+                          print('Updated nutrition summary: ${dbProvider.dailyNutritionSummary}');
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-        label: const Text('Add'),
-        icon: const Icon(Icons.add),
-      ),
+            );
+          },
+          label: const Text('Add'),
+          icon: const Icon(Icons.add),
+        )
     );
   }
 }
