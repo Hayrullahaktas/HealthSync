@@ -2,6 +2,8 @@
 
 ## Projenin Amacı ve Kapsamı
 HealthSync, kullanıcıların fitness ve beslenme aktivitelerini takip etmelerine olanak sağlayan bir mobil uygulamadır.
+https://drive.google.com/drive/folders/1TzST0WX6a02jAxE8z0Cl7-v89GfZmzR7
+
 ## Geliştirme Süreci ve Branch Stratejisi
 
 ### Branch Yapısı
